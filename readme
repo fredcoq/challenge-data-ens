@@ -1,0 +1,20 @@
+import pandas as pd
+from jours import holydays
+x_train=pd.read_csv('training_input_qFI2jug.csv', index_col='Horodate_UTC')
+
+# x_train.at[0, 'Horodate_UTC'] = '13/10/2013 22:30:55'
+# x_train['datetime'] = pd.to_datetime(x_train['Horodate_UTC'], format="%d/%m/%Y %H:%M")
+# x_train = x_train.set_index('datetime')
+# 
+# x_train.drop(['Horodate_UTC'], axis=1, inplace=True)
+
+
+date = holydays()
+
+date.Dataframe(x_train)
+
+date.split()
+
+workday_df = date.business_days()
+dayoff_df = date.public_holiday()
+
