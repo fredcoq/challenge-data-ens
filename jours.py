@@ -31,7 +31,7 @@ class holydays :
 
         if isinstance(df.index, pd.DatetimeIndex):
             self.format = "%Y-%m-d% H%:M%:S%"
-            self.dfSplit()
+            self.split()
         elif isinstance(df.index, pd.RangeIndex) :
             print(
                 """
@@ -138,8 +138,8 @@ class holydays :
             else:
                 self.my_df.at[d, 'workday'] = 0
 
-        self.workdays = self.my_df[self.my_df['workday'] == 1]
-        self.daysoff = self.my_df[self.my_df['workday'] == 0]
+        self.workdays = self.my_df.loc[self.my_df.workday == 1, :]
+        self.daysoff = self.my_df.loc[self.my_df.workday == 0, :]
 
     def business_days(self):
         return self.workdays
