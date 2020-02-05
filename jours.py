@@ -16,11 +16,13 @@ class holydays :
 
     def __init__(self, x=None) :
         self.pentecote()
+        self.set_extradaysoff()
+
         self.workdays = pd.DataFrame()
         self.daysoff = pd.DataFrame()
 
         if (x != None):
-            self.setDate(x)
+            self.date(x)
 
     def Dataframe(self, df):
         self.format = "%m/%d/%Y %H:%M"
@@ -66,7 +68,10 @@ class holydays :
                     raise
 
     def pentecote(self, dayoff=False):
-        self.pentecote = dayoff
+        self.pentecoteoff = dayoff
+
+    def set_extradaysoff(self, dayoff=False):
+        self.extradaysoff = dayoff
 
 
     def paques(self):
@@ -89,37 +94,52 @@ class holydays :
         return ((4, r - 31) if r > 31 else (3, r))
 
     def workday(self):
-        return False if (self.weekend() | self.holyday()) else True
+        self.set_holyday()
+        return False if ((self.extra_days_off() & self.extradaysoff) | self.weekend() | self.holyday(date(self.my_date.year, self.my_date.month, self.my_date.day))) else True
 
     def weekend(self):
         return True if (self.my_date.weekday() == 5 | self.my_date.weekday() == 6) else False
 
-    def holyday(self):
+    def set_holyday(self):
         a = self.my_date.year
         (m, j) = self.paques()  # Dimanche de Pâques
-        date_paques = date(a, m, j)
+        self.date_paques = date(a, m, j)
 
-        jour_an = date(a, 1, 1)
-        fete_travail = date(a, 5, 1)
-        victoire = date(a, 5, 8)
-        fete_nationale = date(a, 7, 14)
-        assomption = date(a, 8, 15)
-        toussain = date(a, 11, 1)
-        armistice = date(a, 11, 11)
-        noel = date(a, 12, 25)
-        lundi_paques = date_paques + timedelta(1)
-        ascension = date_paques + timedelta(39)
+        self.jour_an = date(a, 1, 1)
+        self.fete_travail = date(a, 5, 1)
+        self.victoire = date(a, 5, 8)
+        self.fete_nationale = date(a, 7, 14)
+        self.assomption = date(a, 8, 15)
+        self.toussain = date(a, 11, 1)
+        self.armistice = date(a, 11, 11)
+        self.noel = date(a, 12, 25)
+        self.lundi_paques = self.date_paques + timedelta(1)
+        self.ascension = self.date_paques + timedelta(39)
+
         pentecote = ""
 
-        if self.pentecote :
-            pentecote = date_paques + timedelta(50)
+        if self.pentecoteoff:
+            pentecote = self.date_paques + timedelta(50)
 
-        my_date = date(a, self.my_date.month, self.my_date.day)
+        self.pentecote = pentecote
 
-        if ((my_date == jour_an) | (my_date == fete_travail) | (my_date == victoire) | (
-                my_date == fete_nationale) | (my_date == assomption)
-                | (my_date == toussain) | (my_date == armistice) | (my_date == noel) | (
-                        my_date == lundi_paques) | (my_date == ascension) | (my_date == pentecote)):
+    def holyday(self, my_date):
+        if ((my_date == self.jour_an) | (my_date == self.fete_travail) | (my_date == self.victoire) | (
+                my_date == self.fete_nationale) | (my_date == self.assomption)
+                | (my_date == self.toussain) | (my_date == self.armistice) | (my_date == self.noel) | (
+                        my_date == self.lundi_paques) | (my_date == self.ascension) | (my_date == self.pentecote)):
+            return True
+        else:
+            return False
+
+    def extra_days_off(self):
+        today = date(self.my_date.year, self.my_date.month, self.my_date.day)
+
+        if (
+                ((today.weekday() == 0) & (self.holyday(today + timedelta(1))))
+                |
+                ((today.weekday() == 4) & (self.holyday(today - timedelta(1))))
+        ):
             return True
         else:
             return False
