@@ -11,6 +11,8 @@ x_train=pd.read_csv('training_input_qFI2jug.csv', index_col='Horodate_UTC')
 
 date = holydays()
 
+date.set_extradaysoff(True) # pour gérer les ponts
+
 date.Dataframe(x_train)
 
 date.split()
