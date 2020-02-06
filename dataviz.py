@@ -34,6 +34,20 @@ def data_slice_year(data,year,columns=None) :
         
     return data.loc[date(year,1,1) : date(year,12,31)][columns]
 
+def data_slice_date(data,start_date,end_date,columns=None) :
+    
+# fonction permettant de découper le dataset en temps et en features
+# argument year : prend une année entière
+# columns : list contenant le noms des colonnes à extraire si vide prend toutes les colonnes
+
+    if columns==None : 
+        columns=data.columns
+        
+    if start_date==None :
+        start_date=data.index[0]
+        
+    return data.loc[start_date : end_date][columns]
+
 def data_timeplot(data,plot_per_line=5):
     
 # focntion permettant de représenter les séries temporelles individuelles 
