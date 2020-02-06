@@ -95,10 +95,24 @@ class holydays :
 
     def workday(self):
         self.set_holyday()
+        # if self.extra_days_off() & self.extradaysoff:
+        #     return False
+        # elif self.weekend():
+        #     return False
+        # elif self.holyday(date(self.my_date.year, self.my_date.month, self.my_date.day)):
+        #     return False
+        # else:
+        #     return True
         return False if ((self.extra_days_off() & self.extradaysoff) | self.weekend() | self.holyday(date(self.my_date.year, self.my_date.month, self.my_date.day))) else True
 
     def weekend(self):
-        return True if (self.my_date.weekday() == 5 | self.my_date.weekday() == 6) else False
+        # if self.my_date.weekday() == 5:
+        #     return True
+        # elif self.my_date.weekday() == 6:
+        #     return True
+        # else:
+        #     return False
+        return True if ((self.my_date.weekday() == 5) | (self.my_date.weekday() == 6)) else False
 
     def set_holyday(self):
         a = self.my_date.year
@@ -157,6 +171,10 @@ class holydays :
                 self.my_df.at[d, 'workday'] = 1
             else:
                 self.my_df.at[d, 'workday'] = 0
+
+            # self.my_df.at[d, 'weekday'] = d.strftime("%A")
+
+        # self.my_df.to_csv("temp_df.csv",";")
 
         self.workdays = self.my_df.loc[self.my_df.workday == 1, :]
         self.daysoff = self.my_df.loc[self.my_df.workday == 0, :]
