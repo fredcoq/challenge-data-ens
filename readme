@@ -1,5 +1,5 @@
 import pandas as pd
-from jours import holydays
+from jours import holydays, summer_winter_time
 x_train=pd.read_csv('training_input_qFI2jug.csv', index_col='Horodate_UTC')
 
 # x_train.at[0, 'Horodate_UTC'] = '13/10/2013 22:30:55'
@@ -8,15 +8,32 @@ x_train=pd.read_csv('training_input_qFI2jug.csv', index_col='Horodate_UTC')
 # 
 # x_train.drop(['Horodate_UTC'], axis=1, inplace=True)
 
+changeover = summer_winter_time(x_train)
+
+changeover.split('Horodate')
+
+summer_time = changeover.summer_time()
+summer_time.head()
+
+winter_time = changeover.winter_time()
+winter_time.head()
 
 date = holydays()
-
 date.set_extradaysoff(True) # pour gérer les ponts
-
-date.Dataframe(x_train)
-
+date.Dataframe(summer_time)
 date.split()
 
-workday_df = date.business_days()
-dayoff_df = date.public_holiday()
+summer_time_workday_df = date.business_days()
+summer_time_workday_df.head(20)
 
+summer_time_dayoff_df = date.public_holiday()
+summer_time_dayoff_df.head(20)
+
+date.Dataframe(winter_time)
+date.split()
+
+winter_time_workday_df = date.business_days()
+winter_time_workday_df.head(20)
+
+winter_time_dayoff_df = date.public_holiday()
+winter_time_dayoff_df.head(20)
