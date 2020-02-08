@@ -10,7 +10,7 @@ x_train=pd.read_csv('training_input_qFI2jug.csv', index_col='Horodate_UTC')
 
 changeover = summer_winter_time(x_train)
 
-changeover.split('Horodate')
+changeover.split()
 
 summer_time = changeover.summer_time()
 summer_time.head()
