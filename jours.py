@@ -1,4 +1,5 @@
-from datetime import datetime, date, timedelta, time
+from datetime import datetime, date, timedelta
+import pytz
 import pandas as pd
 import sys
 import re
@@ -171,10 +172,13 @@ class summer_winter_time:
     """
         This class split a dataframe into two dataframes according to summer time or winter time
     """
-    regex = r"(\d{4}-\d{2}-\d{2})\D{1}(\d{2}:\d{2}:\d{2})\D{1}(\d{2}:\d{2})"
+
     my_df = None
     winter = None
     summer = None
+
+    utc = pytz.utc
+    paris = pytz.timezone('Europe/Paris')
 
     def __init__(self, df):
         if isinstance(df, pd.DataFrame):
@@ -185,19 +189,50 @@ class summer_winter_time:
         self.winter = pd.DataFrame()
         self.summer = pd.DataFrame()
 
-    def split(self, columnName):
-
-        for index, row in self.my_df.iterrows():
-            time_str = row[columnName]
-            matches = re.match(self.regex, time_str)
-            time_object = datetime.strptime(matches.groups()[2], '%H:%M').time()
-            self.my_df.at[index, 'time'] = time_object.hour
+    def split(self):
+        if isinstance(self.my_df.index, pd.DatetimeIndex):
+            list_date = self.my_df.index.tolist()
+            for d in list_date:
+                self.time_zone(d)
+                self.my_df.at[d, 'time'] = self.time_zone(d).hour
+        else:
+            for index, row in self.my_df.iterrows():
+                self.my_df.at[index, 'time'] = self.time_zone(index).hour
 
         self.winter = self.my_df.loc[self.my_df.time == 1, self.my_df.columns != 'time']
         self.summer = self.my_df.loc[self.my_df.time == 2, self.my_df.columns != 'time']
+
+    def time_zone(self, str_date):
+        date_obj = self.utc.localize(str_date, is_dst=None).astimezone(self.paris)
+        matches = re.match(r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2}).(\d{2}\d{2})", date_obj.strftime("%Y-%m-%d %H:%M:%S%z"))
+        time_object = datetime.strptime(matches.groups()[2], '%H%M').time()
+        return time_object
 
     def winter_time(self):
         return self.winter
 
     def summer_time(self):
         return self.summer
+
+
+def to_cet(df):
+
+    utc = pytz.utc
+    paris = pytz.timezone('Europe/Paris')
+
+    if isinstance(df.index, pd.DatetimeIndex):
+        list_date = df.index.tolist()
+        for d in list_date:
+            date_obj = utc.localize(d, is_dst=None).astimezone(paris)
+            df.at[d, 'Date'] = datetime(date_obj.year, date_obj.month, date_obj.day, date_obj.hour, date_obj.minute,
+                                        date_obj.second)
+    else:
+        for index, row in df.iterrows():
+            date_obj = utc.localize(index, is_dst=None).astimezone(paris)
+            df.at[index, 'Date'] = datetime(date_obj.year, date_obj.month, date_obj.day, date_obj.hour, date_obj.minute,
+                                            date_obj.second)
+
+    df.reset_index(inplace=True)
+    df.set_index('Date', inplace=True)
+
+    return df
