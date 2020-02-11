@@ -22,6 +22,7 @@ class holydays :
 
         self.workdays = pd.DataFrame()
         self.daysoff = pd.DataFrame()
+        self.prophet_onoff = pd.DataFrame()
 
         if (x != None):
             self.date(x)
@@ -35,7 +36,9 @@ class holydays :
 
         if isinstance(df.index, pd.DatetimeIndex):
             self.format = "%Y-%m-d% H%:M%:S%"
+            self.prophet()
             self.split()
+            
         elif isinstance(df.index, pd.RangeIndex) :
             print(
                 """
@@ -161,7 +164,29 @@ class holydays :
 
         self.workdays = self.my_df.loc[self.my_df.workday == 1,  self.my_df.columns != 'workday']
         self.daysoff = self.my_df.loc[self.my_df.workday == 0, self.my_df.columns != 'workday']
+        
+    def prophet(self):
+        
+        list_date = self.my_df.index.tolist()
+        self.prophet_onoff=self.my_df
+        for d in list_date :
+            if isinstance(d, datetime) :
+                new_date = datetime(d.year, d.month, d.day, d.hour, d.minute, d.second)
+                self.date(new_date.strftime("%d/%m/%Y %H:%M:%S"))
+            else :
+                self.date(d)
 
+            if self.workday() :
+                self.prophet_onoff.at[d, 'on_work'] = True
+                self.prophet_onoff.at[d, 'off_work'] = False
+            else:
+                self.prophet_onoff.at[d, 'off_work'] = True
+                self.prophet_onoff.at[d, 'on_work'] = False
+                
+        
+    def prophet_days_onoff(self):
+        return self.prophet_onoff
+    
     def business_days(self):
         return self.workdays
 
