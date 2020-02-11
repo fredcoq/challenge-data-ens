@@ -256,7 +256,6 @@ class summer_winter_time:
         if isinstance(self.my_df.index, pd.DatetimeIndex):
             list_date = self.my_df.index.tolist()
             for d in list_date:
-                self.__time_zone(d)
                 self.my_df.at[d, 'time'] = self.__time_zone(d).hour
         else:
             for index, row in self.my_df.iterrows():
