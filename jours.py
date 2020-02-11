@@ -4,7 +4,8 @@ import pandas as pd
 import sys
 import re
 
-class holydays :
+
+class holydays:
     """
     This class check if a date is a french day off or a work day
     by default, pentecôte is a working day
@@ -15,31 +16,39 @@ class holydays :
 
     workdays = None
     daysoff = None
+    prophet_df = None
 
-    def __init__(self, x=None) :
+    def __init__(self, x=None):
+        r"""
+        Constructor
+        :param x (String, optional): a date with a 'd/m/Y H:M:S' format
+        """
         self.pentecote()
         self.set_extradaysoff()
 
         self.workdays = pd.DataFrame()
         self.daysoff = pd.DataFrame()
-        self.prophet_onoff = pd.DataFrame()
 
         if (x != None):
             self.date(x)
 
     def Dataframe(self, df):
+        r"""
+        setting DataFrame
+        :param df (DataFrame): DataFrame to split
+        """
         self.format = "%m/%d/%Y %H:%M"
         if isinstance(df, pd.DataFrame):
             self.my_df = df
+            self.prophet_df = self.my_df.copy()
         else:
             raise ValueError('{df} not a pandas dataframe')
 
         if isinstance(df.index, pd.DatetimeIndex):
             self.format = "%Y-%m-d% H%:M%:S%"
-            self.prophet()
             self.split()
-            
-        elif isinstance(df.index, pd.RangeIndex) :
+
+        elif isinstance(df.index, pd.RangeIndex):
             print(
                 """
                 you must change your RangeIndex in a DatetimeIndex 
@@ -57,6 +66,10 @@ class holydays :
             )
 
     def date(self, x):
+        r"""
+        build datetime object
+        :param (String): a date with a 'd/m/Y H:M:S' format
+        """
         try:
             datetime_object = datetime.strptime(x, '%d/%m/%Y')
             self.my_date = datetime_object
@@ -99,7 +112,8 @@ class holydays :
 
     def workday(self):
         self.set_holyday()
-        return False if ((self.extra_days_off() & self.extradaysoff) | self.weekend() | self.holyday(date(self.my_date.year, self.my_date.month, self.my_date.day))) else True
+        return False if ((self.extra_days_off() & self.extradaysoff) | self.weekend() | self.holyday(
+            date(self.my_date.year, self.my_date.month, self.my_date.day))) else True
 
     def weekend(self):
         return True if ((self.my_date.weekday() == 5) | (self.my_date.weekday() == 6)) else False
@@ -150,48 +164,52 @@ class holydays :
 
     def split(self):
         list_date = self.my_df.index.tolist()
-        for d in list_date :
-            if isinstance(d, datetime) :
+        for d in list_date:
+            if isinstance(d, datetime):
                 new_date = datetime(d.year, d.month, d.day, d.hour, d.minute, d.second)
                 self.date(new_date.strftime("%d/%m/%Y %H:%M:%S"))
-            else :
+            else:
                 self.date(d)
 
-            if self.workday() :
+            if self.workday():
                 self.my_df.at[d, 'workday'] = 1
             else:
                 self.my_df.at[d, 'workday'] = 0
 
-        self.workdays = self.my_df.loc[self.my_df.workday == 1,  self.my_df.columns != 'workday']
+        self.workdays = self.my_df.loc[self.my_df.workday == 1, self.my_df.columns != 'workday']
         self.daysoff = self.my_df.loc[self.my_df.workday == 0, self.my_df.columns != 'workday']
-        
+
     def prophet(self):
-        
-        list_date = self.my_df.index.tolist()
-        self.prophet_onoff=self.my_df
-        for d in list_date :
-            if isinstance(d, datetime) :
+
+        self.prophet_df = self.prophet_df.join(pd.DataFrame(
+            {
+                'on_work': False,
+                'off_work': False
+            }, index=self.prophet_df.index
+        ))
+
+        list_date = self.prophet_df.index.tolist()
+
+        for d in list_date:
+            if isinstance(d, datetime):
                 new_date = datetime(d.year, d.month, d.day, d.hour, d.minute, d.second)
                 self.date(new_date.strftime("%d/%m/%Y %H:%M:%S"))
-            else :
+            else:
                 self.date(d)
 
-            if self.workday() :
-                self.prophet_onoff.at[d, 'on_work'] = True
-                self.prophet_onoff.at[d, 'off_work'] = False
+            if self.workday():
+                self.prophet_df.at[d, 'on_work'] = True
             else:
-                self.prophet_onoff.at[d, 'off_work'] = True
-                self.prophet_onoff.at[d, 'on_work'] = False
-                
-        
-    def prophet_days_onoff(self):
-        return self.prophet_onoff
-    
+                self.prophet_df.at[d, 'off_work'] = True
+
+        return self.prophet_df
+
     def business_days(self):
         return self.workdays
 
     def public_holiday(self):
         return self.daysoff
+
 
 class summer_winter_time:
     """
@@ -229,7 +247,8 @@ class summer_winter_time:
 
     def time_zone(self, str_date):
         date_obj = self.utc.localize(str_date, is_dst=None).astimezone(self.paris)
-        matches = re.match(r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2}).(\d{2}\d{2})", date_obj.strftime("%Y-%m-%d %H:%M:%S%z"))
+        matches = re.match(r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2}).(\d{2}\d{2})",
+                           date_obj.strftime("%Y-%m-%d %H:%M:%S%z"))
         time_object = datetime.strptime(matches.groups()[2], '%H%M').time()
         return time_object
 
@@ -241,7 +260,6 @@ class summer_winter_time:
 
 
 def to_cet(df):
-
     utc = pytz.utc
     paris = pytz.timezone('Europe/Paris')
 
