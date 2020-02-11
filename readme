@@ -10,8 +10,6 @@ x_train=pd.read_csv('training_input_qFI2jug.csv', index_col='Horodate_UTC')
 
 changeover = summer_winter_time(x_train)
 
-changeover.split()
-
 summer_time = changeover.summer_time()
 summer_time.head()
 
@@ -19,7 +17,6 @@ winter_time = changeover.winter_time()
 winter_time.head()
 
 date = holydays()
-date.set_extradaysoff(True) # pour gérer les ponts
 date.Dataframe(summer_time)
 date.split()
 
@@ -40,3 +37,7 @@ winter_time_dayoff_df.head(20)
 
 date.Dataframe(x_train) # je genere un clone du df pour prophet
 df_prophet = date.prophet()
+
+from jours import generate_prophet_dataframe
+# genere prophet DataFrame avec les colonnes winter / summer et on_work / off_work
+df_prophet = generate_prophet_dataframe(x_train)
