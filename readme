@@ -37,3 +37,6 @@ winter_time_workday_df.head(20)
 
 winter_time_dayoff_df = date.public_holiday()
 winter_time_dayoff_df.head(20)
+
+date.Dataframe(x_train) # je genere un clone du df pour prophet
+df_prophet = date.prophet()
