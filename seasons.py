@@ -321,6 +321,7 @@ class special_days:
 
 class seasonalize:
     sdays_df = None
+    dataset = None
     merge = False
     mixed_columns = False
     pentecote = False
@@ -356,7 +357,10 @@ class seasonalize:
                 self.special_days.add_list(dates)
 
             self.__generate_dataset()
-            self.__set_special_day()
+
+            if (key == 'events') or (len(dates) > 0):
+                self.__set_special_day()
+
             self.__merge_dataset()
 
         else:
@@ -439,8 +443,12 @@ class seasonalize:
 
     def __merge_dataset(self):
         if self.merge:
-            self.sdays_df = pd.merge(self.my_df, self.sdays_df, left_index=True, right_index=True)
-            self.dataset = pd.merge(self.sdays_df, self.dataset, left_index=True, right_index=True)
+            if self.sdays_df is not None:
+                self.sdays_df = pd.merge(self.my_df, self.sdays_df, left_index=True, right_index=True)
+                self.dataset = pd.merge(self.sdays_df, self.dataset, left_index=True, right_index=True)
+            else:
+                self.dataset = pd.merge(self.my_df, self.dataset, left_index=True, right_index=True)
+
 
     def event(self, date):
         """
