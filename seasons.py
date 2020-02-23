@@ -108,7 +108,7 @@ class holydays:
             return False
 
     def __date(self, str_date):
-        self.my_date = usidate.datetime(str_date)
+        self.my_date = clock.datetime(str_date)
 
     def thisdate(self, date):
         """
@@ -152,7 +152,7 @@ class solstice:
         :param date (datetime): date in UTC
         :param timezone (str, optional): timezone by default it s on Europe/Paris
         """
-        self.my_date = usidate(obj_date, timeZone=timeZone)
+        self.my_date = clock(obj_date, timeZone=timeZone)
 
     def is_winter(self):
         """
@@ -164,7 +164,7 @@ class solstice:
         else:
             return False
 
-class usidate:
+class clock:
 
     utc = pytz.utc
     local = pytz.timezone('Europe/Paris')
@@ -267,7 +267,7 @@ class special_days:
         :param key:
         :param value:
         """
-        self.event[key] = usidate.datetime(value)
+        self.event[key] = clock.datetime(value)
 
     def add_dict(self, **kwargs):
         """
@@ -280,15 +280,15 @@ class special_days:
             if isinstance(value, list):
                 key = key + '_day_'
 
-                date_list = [usidate.datetime(value[0]) - timedelta(days=x) for x in
-                             range(int((usidate.datetime(value[1]) - usidate.datetime(value[0])).days) + 1)]
+                date_list = [clock.datetime(value[0]) - timedelta(days=x) for x in
+                             range(int((clock.datetime(value[1]) - clock.datetime(value[0])).days) + 1)]
 
                 for idx, val in enumerate(date_list):
                     idx = idx + 1
                     self.event[key + str(idx)] = val
 
             else:
-                self.event[key] = usidate.datetime(value)
+                self.event[key] = clock.datetime(value)
 
     def add_list(self, *args):
         """
@@ -298,11 +298,11 @@ class special_days:
 
         for idx, value in enumerate(args):
             if isinstance(value, list):
-                date_list = [usidate.datetime(value[0]) - timedelta(days=x) for x in
-                             range(int((usidate.datetime(value[1]) - usidate.datetime(value[0])).days) + 1)]
+                date_list = [clock.datetime(value[0]) - timedelta(days=x) for x in
+                             range(int((clock.datetime(value[1]) - clock.datetime(value[0])).days) + 1)]
                 self.event = self.event + date_list
             else:
-                self.event[idx] = usidate.datetime(value)
+                self.event[idx] = clock.datetime(value)
 
     def delete(self, key):
         """
@@ -350,7 +350,7 @@ class seasonalize:
                 elif key == 'events':
                     self.special_days.add_dict(**value)
                 else:
-                    dates.append(usidate.datetime(value))
+                    dates.append(clock.datetime(value))
 
             if len(dates) > 0:
                 self.special_days.add_list(dates)
@@ -432,7 +432,7 @@ class seasonalize:
 
         list_date = self.my_df.index.tolist()
         for d in list_date:
-            dt_event = usidate.datetime(d)
+            dt_event = clock.datetime(d)
 
             if self.event(dt_event):
                 self.sdays_df.at[d, 'special_days'] = True
@@ -453,14 +453,14 @@ class seasonalize:
                 return True
         return False
 
-    def event_dataset(self):
+    def events_dataset(self):
         """
         specials events dataframe
         :return (DataFrame):
         """
         return self.sdays_df
 
-    def season_dataset(self):
+    def seasons_dataset(self):
         """
         seasonality dataframe
         :return (DataFrame):
