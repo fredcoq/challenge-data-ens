@@ -164,6 +164,20 @@ class solstice:
         else:
             return False
 
+
+class HoursRate:
+
+    def __init__(self, obj_date, timeZone=None):
+        self.my_date = clock(obj_date, timeZone=timeZone)
+
+    def is_offpeak(self):
+        my_time = self.my_date.time()
+
+        if (my_time >= datetime.strptime('21:30:00', '%H:%M:%S').time()) or (my_time <= datetime.strptime('07:30:00', '%H:%M:%S').time()):
+            return True
+        else:
+            return False
+
 class clock:
 
     utc = pytz.utc
@@ -322,6 +336,7 @@ class special_days:
 class seasonalize:
     sdays_df = None
     dataset = None
+    offpeak_df = None
     merge = False
     mixed_columns = False
     pentecote = False
@@ -356,6 +371,7 @@ class seasonalize:
             if len(dates) > 0:
                 self.special_days.add_list(dates)
 
+            self.__set_offpeakhours()
             self.__generate_dataset()
 
             if (key == 'events') or (len(dates) > 0):
@@ -425,6 +441,18 @@ class seasonalize:
                 else:
                     self.dataset.at[d, 'summer_off_work'] = True
 
+    def __set_offpeakhours(self):
+        self.offpeak_df = pd.DataFrame(
+            {
+                'offpeak_hours': 0,
+            }, index=self.my_df.index
+        )
+
+        list_date = self.my_df.index.tolist()
+        for d in list_date:
+            if HoursRate(d).is_offpeak():
+                self.offpeak_df.at[d, 'offpeak_hours'] = 1
+
     def __set_special_day(self):
         self.sdays_df = pd.DataFrame(
             {
@@ -443,12 +471,10 @@ class seasonalize:
 
     def __merge_dataset(self):
         if self.merge:
+            self.dataset = pd.merge(self.my_df, self.dataset, left_index=True, right_index=True)
+            self.dataset = pd.merge(self.offpeak_df, self.dataset, left_index=True, right_index=True)
             if self.sdays_df is not None:
-                self.sdays_df = pd.merge(self.my_df, self.sdays_df, left_index=True, right_index=True)
                 self.dataset = pd.merge(self.sdays_df, self.dataset, left_index=True, right_index=True)
-            else:
-                self.dataset = pd.merge(self.my_df, self.dataset, left_index=True, right_index=True)
-
 
     def event(self, date):
         """
