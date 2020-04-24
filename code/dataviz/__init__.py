@@ -1,3 +1,4 @@
+import os.path
 import numpy as np
 from datetime import datetime, date, timedelta
 import matplotlib.pyplot as plt
@@ -113,3 +114,20 @@ def mape(y_true, y_pred):
 def savefig(figure, filename, dpi=200):
     for ext in ['png', 'jpeg', 'pdf']:
         figure.savefig(f'{filename}.{ext}', dpi=dpi)
+
+
+def pathtodump():
+    path = "datasets\\dumps\\"
+
+    while not os.path.exists(path):
+        path = "..\\" + path
+
+    if os.path.exists(path):
+        return path
+
+
+
+
+
+
+
